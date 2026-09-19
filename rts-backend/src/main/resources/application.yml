@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: rts-backend
+  datasource:
+    url: jdbc:postgresql://localhost:5432/rts
+    username: rts
+    password: ${RTS_DB_PASSWORD:rts_dev_password}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 5000
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+
+
+server:
+  port: 8080
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+
+# --- RTS application-specific configuration ---
+rts:
+  gitlab:
+    connect-timeout-ms: 5000
+    read-timeout-ms: 10000
+    max-retries: 3
+  analysis:
+    repo-cache-dir: ${RTS_REPO_CACHE:./data/repos}
+    async-pool-size: 4
+  recommendation:
+    weight-code-impact: 0.50
+    weight-failure-history: 0.30
+    weight-coverage: 0.20
+    threshold: 0.3
+  security:
+    encryption-key: ${RTS_ENCRYPTION_KEY:dev-only-key-change-in-prod-32chr!}
+
+logging:
+  level:
+    com.rts: DEBUG
+    org.springframework.jdbc.core: DEBUG
+    org.flywaydb: INFO
