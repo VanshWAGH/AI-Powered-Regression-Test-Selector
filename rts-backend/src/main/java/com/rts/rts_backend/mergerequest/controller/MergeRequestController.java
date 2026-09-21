@@ -34,9 +34,14 @@ public class MergeRequestController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<MergeRequestResponse>>> getByRepositoryId(
-            @RequestParam UUID repositoryId,
+            @RequestParam(required = false) UUID repositoryId,
             HttpServletRequest request) {
-        List<MergeRequestResponse> response = mergeRequestService.getByRepositoryId(repositoryId);
+        List<MergeRequestResponse> response;
+        if (repositoryId != null) {
+            response = mergeRequestService.getByRepositoryId(repositoryId);
+        } else {
+            response = mergeRequestService.getAll();
+        }
         return ResponseEntity.ok(ApiResponse.of(response, requestId(request), null, response.size()));
     }
 

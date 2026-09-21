@@ -96,6 +96,30 @@ public class EvaluationDao {
                 .orElse(new AggregateStats(0, null, null, null, null));
     }
 
+    /**
+     * Get aggregate stats across all repositories.
+     */
+    public AggregateStats getGlobalAggregateStats() {
+        return jdbc.sql("""
+                SELECT
+                    COUNT(*) as eval_count,
+                    AVG(recall_pct) as avg_recall,
+                    AVG(precision_pct) as avg_precision,
+                    AVG(time_saved_pct) as avg_time_saved_pct,
+                    SUM(time_saved_seconds) as total_time_saved
+                FROM recommendation_evaluations
+                """)
+                .query((rs, rowNum) -> new AggregateStats(
+                        rs.getInt("eval_count"),
+                        rs.getObject("avg_recall", Double.class),
+                        rs.getObject("avg_precision", Double.class),
+                        rs.getObject("avg_time_saved_pct", Double.class),
+                        rs.getObject("total_time_saved", Long.class)
+                ))
+                .optional()
+                .orElse(new AggregateStats(0, null, null, null, null));
+    }
+
     public record AggregateStats(
             int evaluationCount,
             Double avgRecallPct,

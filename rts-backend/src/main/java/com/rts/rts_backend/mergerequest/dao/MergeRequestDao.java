@@ -116,6 +116,12 @@ public class MergeRequestDao {
                 .list();
     }
 
+    public List<MergeRequest> findAll() {
+        return jdbc.sql("SELECT * FROM merge_requests ORDER BY updated_at DESC")
+                .query(ROW_MAPPER)
+                .list();
+    }
+
     private static Instant toInstant(Timestamp ts) {
         return ts != null ? ts.toInstant() : null;
     }

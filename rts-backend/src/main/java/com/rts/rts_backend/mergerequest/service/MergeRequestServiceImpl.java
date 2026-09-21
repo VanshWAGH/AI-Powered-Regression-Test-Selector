@@ -31,4 +31,11 @@ public class MergeRequestServiceImpl implements MergeRequestService {
                 .map(MergeRequestResponse::from)
                 .toList();
     }
+
+    @Override
+    public List<MergeRequestResponse> getAll() {
+        return mergeRequestDao.findAll().stream()
+                .map(MergeRequestResponse::from)
+                .toList();
+    }
 }

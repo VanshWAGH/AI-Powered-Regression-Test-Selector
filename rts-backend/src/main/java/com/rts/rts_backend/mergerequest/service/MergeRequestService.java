@@ -8,4 +8,5 @@ import java.util.UUID;
 public interface MergeRequestService {
     MergeRequestResponse getById(UUID id);
     List<MergeRequestResponse> getByRepositoryId(UUID repositoryId);
+    List<MergeRequestResponse> getAll();
 }

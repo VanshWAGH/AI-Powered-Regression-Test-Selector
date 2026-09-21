@@ -9,6 +9,7 @@ import { getRepository, getMergeRequests, getAggregateStats } from "@/lib/api"
 import { Repository, MergeRequest, AggregateStats } from "@/lib/types"
 import { Skeleton, TableSkeleton } from "@/components/ui/loading-skeleton"
 import { Button } from "@/components/ui/button"
+import { validateRepository } from "@/lib/api"
 import { FolderGit2, GitMerge, Settings, ShieldCheck, RefreshCw, BarChart, ArrowRight, GitBranch } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { AnimatedCounter } from "@/components/ui/animated-counter"
@@ -23,6 +24,7 @@ export default function RepositoryDetailPage() {
   const [mrs, setMrs] = useState<MergeRequest[]>([])
   const [stats, setStats] = useState<AggregateStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isValidating, setIsValidating] = useState(false)
 
   useEffect(() => {
     async function loadData() {
@@ -44,6 +46,20 @@ export default function RepositoryDetailPage() {
     }
     loadData()
   }, [repoId])
+
+  const handleValidate = async () => {
+    setIsValidating(true)
+    try {
+      await validateRepository(repoId)
+      // Refresh repo data after validation
+      const repoData = await getRepository(repoId)
+      setRepo(repoData)
+    } catch (error) {
+      console.error("Validation failed", error)
+    } finally {
+      setIsValidating(false)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -78,9 +94,17 @@ export default function RepositoryDetailPage() {
               <Settings className="mr-2 h-4 w-4" />
               Settings
             </Button>
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/20">
-              <ShieldCheck className="mr-2 h-4 w-4" />
-              Validate
+            <Button 
+              className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/20"
+              onClick={handleValidate}
+              disabled={isValidating}
+            >
+              {isValidating ? (
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <ShieldCheck className="mr-2 h-4 w-4" />
+              )}
+              {isValidating ? "Validating..." : "Validate"}
             </Button>
           </div>
         }
