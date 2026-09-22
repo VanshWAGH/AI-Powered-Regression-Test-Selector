@@ -32,8 +32,8 @@ services:
       - key: RTS_ENCRYPTION_KEY
         generateValue: true
 
-  - type: psql
-    name: rts-database
+databases:
+  - name: rts-database
     region: ohio
     plan: free
     databaseName: rts
