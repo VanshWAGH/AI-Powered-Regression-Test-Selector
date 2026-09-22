@@ -97,4 +97,12 @@ public class EvaluationService {
     public EvaluationDao.AggregateStats getAggregateStats(UUID repositoryId) {
         return evaluationDao.getAggregateStats(repositoryId);
     }
+
+    public List<RecommendationEvaluation> getGlobalEvaluations() {
+        return evaluationDao.findAll();
+    }
+
+    public EvaluationDao.AggregateStats getGlobalAggregateStats() {
+        return evaluationDao.getGlobalAggregateStats();
+    }
 }

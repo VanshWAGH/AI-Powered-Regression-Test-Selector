@@ -17,36 +17,49 @@ import {
   Bar,
   Cell
 } from "recharts"
-import { getAggregateStats } from "@/lib/api"
+import { getGlobalAggregateStats, getGlobalEvaluations } from "@/lib/api"
 import { AggregateStats } from "@/lib/types"
 import { CardSkeleton } from "@/components/ui/loading-skeleton"
 
-// Mock data for charts
-const recallTrendData = Array.from({ length: 14 }).map((_, i) => ({
-  date: `Day ${i + 1}`,
-  recall: 90 + Math.random() * 10,
-}))
 
-const reductionData = [
-  { name: 'MR-142', reduction: 75, saved: 45 },
-  { name: 'MR-141', reduction: 62, saved: 32 },
-  { name: 'MR-140', reduction: 85, saved: 60 },
-  { name: 'MR-139', reduction: 55, saved: 25 },
-  { name: 'MR-138', reduction: 70, saved: 40 },
-]
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<AggregateStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  const [trendData, setTrendData] = useState<any[]>([])
+  const [barData, setBarData] = useState<any[]>([])
+
   useEffect(() => {
     async function loadStats() {
       try {
-        // Fetch stats for all repos (mocking a global id or just using the first mock repo id)
-        const data = await getAggregateStats('550e8400-e29b-41d4-a716-446655440001')
-        setStats(data)
+        const [statsData, evals] = await Promise.all([
+          getGlobalAggregateStats(),
+          getGlobalEvaluations()
+        ])
+        
+        setStats(statsData)
+
+        // Process recall trend data (chronological order)
+        const sortedEvals = [...evals].sort((a, b) => new Date(a.evaluatedAt).getTime() - new Date(b.evaluatedAt).getTime())
+        const last14 = sortedEvals.slice(-14)
+        
+        setTrendData(last14.map(e => ({
+          date: new Date(e.evaluatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+          recall: e.recallPct || 0,
+        })))
+
+        // Process reduction data (most recent 5 runs)
+        const recent5 = [...evals].sort((a, b) => new Date(b.evaluatedAt).getTime() - new Date(a.evaluatedAt).getTime()).slice(0, 5)
+        
+        setBarData(recent5.reverse().map(e => ({
+          name: `Run-${e.pipelineRunId.substring(0, 4)}`,
+          reduction: e.timeSavedPct || 0,
+          saved: e.timeSavedSeconds || 0,
+        })))
+
       } catch (error) {
-        console.error("Failed to load stats", error)
+        console.error("Failed to load dashboard data", error)
       } finally {
         setIsLoading(false)
       }
@@ -169,7 +182,7 @@ export default function DashboardPage() {
           </div>
           <div className="h-[300px] w-full mt-auto">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={recallTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRecall" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#34d399" stopOpacity={0.3}/>
@@ -177,7 +190,7 @@ export default function DashboardPage() {
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="date" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} domain={['dataMin - 2', 100]} />
+                <YAxis stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} domain={[0, 100]} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
                   itemStyle={{ color: '#34d399' }}
@@ -207,7 +220,7 @@ export default function DashboardPage() {
           </div>
           <div className="h-[300px] w-full mt-auto">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={reductionData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} barSize={30}>
+              <BarChart data={barData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} barSize={30}>
                 <XAxis dataKey="name" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip 
@@ -215,7 +228,7 @@ export default function DashboardPage() {
                   contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
                 />
                 <Bar dataKey="reduction" radius={[4, 4, 0, 0]}>
-                  {reductionData.map((entry, index) => (
+                  {barData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.reduction > 70 ? '#8b5cf6' : '#3b82f6'} />
                   ))}
                 </Bar>

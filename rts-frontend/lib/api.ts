@@ -11,7 +11,7 @@ import {
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
 
 // Set to true to use mock data when backend is not running
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK !== 'false';
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === 'true';
 
 /**
  * Generic fetch wrapper with error handling.
@@ -327,7 +327,17 @@ export async function getEvaluations(repositoryId: string): Promise<Recommendati
   return fetchApi<RecommendationEvaluation[]>(`/evaluations/repositories/${repositoryId}`);
 }
 
+export async function getGlobalEvaluations(): Promise<RecommendationEvaluation[]> {
+  if (USE_MOCK) { await delay(); return MOCK_EVALUATIONS; }
+  return fetchApi<RecommendationEvaluation[]>('/evaluations');
+}
+
 export async function getAggregateStats(repositoryId: string): Promise<AggregateStats> {
   if (USE_MOCK) { await delay(); return MOCK_STATS; }
   return fetchApi<AggregateStats>(`/evaluations/repositories/${repositoryId}/stats`);
+}
+
+export async function getGlobalAggregateStats(): Promise<AggregateStats> {
+  if (USE_MOCK) { await delay(); return MOCK_STATS; }
+  return fetchApi<AggregateStats>('/evaluations/stats');
 }

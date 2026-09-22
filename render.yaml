@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: rts-backend
+    env: docker
+    region: ohio
+    plan: free
+    dockerContext: ./rts-backend
+    dockerfilePath: ./rts-backend/Dockerfile
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: rts-database
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: rts-database
+          property: password
+      - key: PGHOST
+        fromDatabase:
+          name: rts-database
+          property: host
+      - key: PGPORT
+        fromDatabase:
+          name: rts-database
+          property: port
+      - key: PGDATABASE
+        fromDatabase:
+          name: rts-database
+          property: database
+      - key: RTS_ENCRYPTION_KEY
+        generateValue: true
+
+  - type: psql
+    name: rts-database
+    region: ohio
+    plan: free
+    databaseName: rts

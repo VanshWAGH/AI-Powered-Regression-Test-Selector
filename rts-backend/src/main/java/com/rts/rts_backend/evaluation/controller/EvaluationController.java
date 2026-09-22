@@ -68,6 +68,28 @@ public class EvaluationController {
         return ResponseEntity.ok(ApiResponse.of(stats, requestId(request)));
     }
 
+    /**
+     * Get global evaluation history across all repositories.
+     */
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<RecommendationEvaluation>>> getGlobalEvaluations(
+            HttpServletRequest request) {
+
+        List<RecommendationEvaluation> evaluations = evaluationService.getGlobalEvaluations();
+        return ResponseEntity.ok(ApiResponse.of(evaluations, requestId(request), null, evaluations.size()));
+    }
+
+    /**
+     * Get global aggregate statistics across all repositories.
+     */
+    @GetMapping("/stats")
+    public ResponseEntity<ApiResponse<EvaluationDao.AggregateStats>> getGlobalStats(
+            HttpServletRequest request) {
+
+        EvaluationDao.AggregateStats stats = evaluationService.getGlobalAggregateStats();
+        return ResponseEntity.ok(ApiResponse.of(stats, requestId(request)));
+    }
+
     private static String requestId(HttpServletRequest request) {
         Object id = request.getAttribute("requestId");
         return id != null ? id.toString() : "unknown";

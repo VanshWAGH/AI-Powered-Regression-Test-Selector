@@ -70,6 +70,12 @@ public class EvaluationDao {
                 .list();
     }
 
+    public List<RecommendationEvaluation> findAll() {
+        return jdbc.sql("SELECT * FROM recommendation_evaluations ORDER BY evaluated_at DESC")
+                .query(ROW_MAPPER)
+                .list();
+    }
+
     /**
      * Get aggregate stats for a repository.
      */
