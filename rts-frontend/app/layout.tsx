@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Providers } from "@/components/providers";
 import { AnimatePresence } from "framer-motion";
+import { Toaster } from "@/components/ui/toast";
 
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-sans' });
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -28,6 +29,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-zinc-950 text-zinc-50 overflow-hidden">
         <Providers>
           {children}
+          <Toaster />
         </Providers>
       </body>
     </html>

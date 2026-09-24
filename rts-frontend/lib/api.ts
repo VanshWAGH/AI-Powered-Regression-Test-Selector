@@ -14,10 +14,13 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === 'true';
 
 /**
- * Generic fetch wrapper with error handling.
+ * Generic fetch wrapper with error handling, timeout, and retry logic.
  */
-async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
+async function fetchApi<T>(endpoint: string, options?: RequestInit & { retries?: number, timeout?: number }): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
+  
+  const retries = options?.retries ?? 2;
+  const timeoutMs = options?.timeout ?? 15000; // 15s default timeout
 
   const defaultOptions: RequestInit = {
     headers: {
@@ -26,14 +29,45 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> 
     },
   };
 
-  const response = await fetch(url, { ...defaultOptions, ...options });
-  const data = await response.json();
+  let lastError: Error = new Error("Fetch failed");
+  
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      
+      const response = await fetch(url, { 
+        ...defaultOptions, 
+        ...options,
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
 
-  if (!response.ok) {
-    throw new Error(data.error?.message || data.message || `API request failed with status ${response.status}`);
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.error?.message || data.message || `API request failed with status ${response.status}`);
+      }
+
+      return data.data as T;
+    } catch (error: any) {
+      lastError = error;
+      
+      // Don't retry on client errors (4xx), only network issues or 5xx
+      if (error.message && error.message.includes("status 4")) {
+        throw error;
+      }
+      
+      if (attempt < retries) {
+        // Exponential backoff
+        const delay = Math.min(1000 * Math.pow(2, attempt), 5000);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
   }
 
-  return data.data as T;
+  throw lastError;
 }
 
 // ============================================================

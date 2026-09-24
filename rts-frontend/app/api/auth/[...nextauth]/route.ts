@@ -11,9 +11,11 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        // Simple mock authentication for development
-        // In a real app, you would verify against your backend or use OAuth
-        if (credentials?.username === "admin" && credentials?.password === "password") {
+        // Use environment variables for production admin access
+        const adminUser = process.env.ADMIN_USERNAME || "admin"
+        const adminPass = process.env.ADMIN_PASSWORD || "password"
+
+        if (credentials?.username === adminUser && credentials?.password === adminPass) {
           return { id: "1", name: "RTS Admin", email: "admin@rts.local" }
         }
         return null
@@ -25,6 +27,7 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: "jwt",
+    maxAge: 24 * 60 * 60, // 24 hours
   }
 }
 

@@ -18,6 +18,10 @@ spring:
 server:
   port: 8080
   shutdown: graceful
+  compression:
+    enabled: true
+    mime-types: application/json,text/html,text/plain
+    min-response-size: 1024
 
 management:
   endpoints:
@@ -27,9 +31,14 @@ management:
   endpoint:
     health:
       show-details: when_authorized
+  info:
+    env:
+      enabled: true
 
 # --- RTS application-specific configuration ---
 rts:
+  cors:
+    allowed-origins: ${RTS_CORS_ORIGINS:http://localhost:*,https://*.vercel.app,https://*.rts.dev}
   gitlab:
     connect-timeout-ms: 5000
     read-timeout-ms: 10000

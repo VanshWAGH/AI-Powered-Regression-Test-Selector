@@ -200,11 +200,26 @@ export default function MergeRequestDetail() {
                 <div className="bg-zinc-900 rounded-xl p-4 border border-zinc-800 flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-white mb-1">Maven Selector</p>
-                    <p className="text-xs text-zinc-500 font-mono line-clamp-1 max-w-[300px]">
+                    <p className="text-xs text-zinc-500 font-mono line-clamp-1 max-w-[300px]" id="maven-command">
                       -Dtest={recommendation.rankedTests.filter(t => t.recommended).map(t => t.className).join(',')}
                     </p>
                   </div>
-                  <Button variant="outline" size="sm" className="shrink-0 bg-zinc-800 border-zinc-700">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="shrink-0 bg-zinc-800 border-zinc-700"
+                    onClick={() => {
+                      const textToCopy = `-Dtest=${recommendation.rankedTests.filter(t => t.recommended).map(t => t.className).join(',')}`;
+                      navigator.clipboard.writeText(textToCopy);
+                      import('@/components/ui/toast').then(({ toast }) => {
+                        toast.add({
+                          title: "Copied to clipboard",
+                          description: "Maven test selector copied successfully.",
+                          type: "success"
+                        });
+                      });
+                    }}
+                  >
                     <Copy className="h-4 w-4 mr-2" />
                     Copy
                   </Button>

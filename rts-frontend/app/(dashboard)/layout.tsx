@@ -15,6 +15,17 @@ export default function DashboardLayout({
   const { data: session, status } = useSession()
   const pathname = usePathname()
 
+  if (status === "loading") {
+    return (
+      <div className="flex h-screen w-full items-center justify-center mesh-bg">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-10 w-10 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
+          <p className="text-zinc-400 text-sm">Loading session...</p>
+        </div>
+      </div>
+    )
+  }
+
   if (status === "unauthenticated") {
     redirect("/auth/signin")
   }

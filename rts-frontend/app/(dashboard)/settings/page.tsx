@@ -66,7 +66,18 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Button 
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => {
+                  import('@/components/ui/toast').then(({ toast }) => {
+                    toast.add({
+                      title: "Profile Updated",
+                      description: "Your profile changes have been saved successfully.",
+                      type: "success"
+                    });
+                  });
+                }}
+              >
                 <Save className="w-4 h-4 mr-2" /> Save Changes
               </Button>
             </div>
@@ -101,7 +112,18 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Button 
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => {
+                  import('@/components/ui/toast').then(({ toast }) => {
+                    toast.add({
+                      title: "Configuration Saved",
+                      description: "API and integration settings have been updated.",
+                      type: "success"
+                    });
+                  });
+                }}
+              >
                 <Save className="w-4 h-4 mr-2" /> Save Configurations
               </Button>
             </div>

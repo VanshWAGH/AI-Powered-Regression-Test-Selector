@@ -49,9 +49,23 @@ public class RequestIdFilter implements Filter {
         httpResponse.setHeader(REQUEST_ID_HEADER, requestId);
         httpRequest.setAttribute(MDC_KEY, requestId);
 
+        long startTime = System.currentTimeMillis();
+        
         try {
             chain.doFilter(request, response);
         } finally {
+            long duration = System.currentTimeMillis() - startTime;
+            
+            // Log only for API paths to avoid spamming actuator/static assets
+            if (httpRequest.getRequestURI().startsWith("/api/")) {
+                org.slf4j.LoggerFactory.getLogger(RequestIdFilter.class)
+                    .info("{} {} - {} ({}ms)", 
+                        httpRequest.getMethod(), 
+                        httpRequest.getRequestURI(), 
+                        httpResponse.getStatus(), 
+                        duration);
+            }
+            
             MDC.remove(MDC_KEY);
         }
     }

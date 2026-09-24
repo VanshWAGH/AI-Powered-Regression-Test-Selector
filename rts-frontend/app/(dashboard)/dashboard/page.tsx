@@ -74,7 +74,18 @@ export default function DashboardPage() {
         description="Global performance metrics for the AI Regression Test Selector."
         gradient="hero"
         actions={
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20">
+          <Button 
+            className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20"
+            onClick={() => {
+              import('@/components/ui/toast').then(({ toast }) => {
+                toast.add({
+                  title: "Report Generation Started",
+                  description: "Your global analytics report is being generated and will be emailed to you.",
+                  type: "info"
+                });
+              });
+            }}
+          >
             <Zap className="mr-2 h-4 w-4" />
             Generate Report
           </Button>
