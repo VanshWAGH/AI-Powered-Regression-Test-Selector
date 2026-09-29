@@ -1,34 +1,18 @@
 "use client"
 
 import { Sidebar } from "@/components/sidebar"
-import { useSession } from "next-auth/react"
-import { redirect, usePathname } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { AnimatePresence, motion } from "framer-motion"
 import { Search, Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { UserButton } from "@clerk/nextjs"
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const { data: session, status } = useSession()
   const pathname = usePathname()
-
-  if (status === "loading") {
-    return (
-      <div className="flex h-screen w-full items-center justify-center mesh-bg">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
-          <p className="text-zinc-400 text-sm">Loading session...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (status === "unauthenticated") {
-    redirect("/auth/signin")
-  }
 
   return (
     <div className="flex h-screen w-full overflow-hidden mesh-bg">
@@ -52,6 +36,13 @@ export default function DashboardLayout({
               <Bell className="h-5 w-5 text-zinc-400" />
               <span className="absolute top-1.5 right-2 h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
             </Button>
+            <UserButton 
+              appearance={{
+                elements: {
+                  avatarBox: "h-9 w-9",
+                }
+              }}
+            />
           </div>
         </header>
 

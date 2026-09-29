@@ -4,18 +4,10 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, GitMerge, Settings, Activity, FolderGit2, LogOut, ChevronDown } from "lucide-react"
-import { signOut, useSession } from "next-auth/react"
+import { LayoutDashboard, GitMerge, Settings, Activity, FolderGit2 } from "lucide-react"
+import { useUser } from "@clerk/nextjs"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState } from "react"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -27,7 +19,7 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { data: session } = useSession()
+  const { user } = useUser()
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   return (
@@ -103,49 +95,28 @@ export function Sidebar() {
 
       {/* User Profile Footer */}
       <div className="p-4 border-t border-zinc-800/50">
-        <DropdownMenu>
-          <DropdownMenuTrigger className="flex w-full h-14 items-center justify-start gap-3 px-2 hover:bg-zinc-800/50 rounded-xl outline-none transition-colors">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-semibold shrink-0">
-              {session?.user?.name?.charAt(0) || "U"}
-            </div>
-            <AnimatePresence>
-              {!isCollapsed && (
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex flex-col items-start overflow-hidden flex-1"
-                >
-                  <span className="text-sm font-medium text-zinc-200 truncate w-full text-left">
-                    {session?.user?.name || "Admin User"}
-                  </span>
-                  <span className="text-xs text-zinc-500 truncate w-full text-left">
-                    {session?.user?.email || "admin@rts.local"}
-                  </span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            {!isCollapsed && <ChevronDown className="h-4 w-4 text-zinc-500 ml-auto" />}
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 glass-panel border-zinc-800">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-zinc-800" />
-            <DropdownMenuItem className="hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer">
-              Profile
-            </DropdownMenuItem>
-            <DropdownMenuItem className="hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer">
-              Preferences
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-zinc-800" />
-            <DropdownMenuItem 
-              className="text-rose-400 focus:text-rose-400 hover:bg-rose-500/10 focus:bg-rose-500/10 cursor-pointer"
-              onClick={() => signOut({ callbackUrl: '/auth/signin' })}
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex w-full h-14 items-center justify-start gap-3 px-2 rounded-xl">
+          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-semibold shrink-0">
+            {user?.firstName?.charAt(0) || user?.username?.charAt(0) || "U"}
+          </div>
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col items-start overflow-hidden flex-1"
+              >
+                <span className="text-sm font-medium text-zinc-200 truncate w-full text-left">
+                  {user?.fullName || user?.username || "User"}
+                </span>
+                <span className="text-xs text-zinc-500 truncate w-full text-left">
+                  {user?.primaryEmailAddress?.emailAddress || ""}
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </motion.div>
   )

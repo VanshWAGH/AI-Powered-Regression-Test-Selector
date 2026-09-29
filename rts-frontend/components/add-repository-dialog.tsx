@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { createRepository } from "@/lib/api"
+import { createRepository, validateRepository } from "@/lib/api"
 import { BuildSystem, CreateRepositoryRequest, Repository } from "@/lib/types"
 import { Loader2, Server, Key, GitBranch, CheckCircle2, AlertCircle } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -54,9 +54,17 @@ export function AddRepositoryDialog({ open, onOpenChange, onSuccess }: AddReposi
     
     try {
       const repo = await createRepository(formData)
+      // Call validate immediately after creation to verify token and load metadata
+      const validation = await validateRepository(repo.id)
+      
+      if (!validation.connected) {
+        throw new Error(validation.message || "Connection validation failed")
+      }
+      
       setStep(4) // Success step
       setTimeout(() => {
-        onSuccess(repo)
+        // Optimistically set status to connected for the UI
+        onSuccess({...repo, connectionStatus: 'CONNECTED'})
         handleOpenChange(false)
       }, 1500)
     } catch (err: any) {
